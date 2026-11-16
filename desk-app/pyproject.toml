@@ -1,0 +1,25 @@
+[project]
+name = "desk-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Abhi_NSUT", email = "jitukhatkarabhijeet123@gmail.com" }
+]
+requires-python = ">=3.15"
+dependencies = [
+    "ipykernel>=7.4.0",
+    "langchain>=1.5.0",
+    "langchain-community>=0.4.2",
+    "langchain-google-genai>=4.5.0",
+    "langchain-groq>=1.2.0",
+    "langchain-openai>=1.8.0",
+    "python-dotenv>=1.2.4",
+]
+
+[project.scripts]
+desk-app = "desk_app:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
