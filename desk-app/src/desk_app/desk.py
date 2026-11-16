@@ -6,7 +6,11 @@ from langchain.chat_models import init_chat_model
 
 from .desk_tools import Customer, lookup_order, refund_order
 from .search import search_policies
-
+from langchain.agents import create_agent
+from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimitMiddleware, PIIMiddleware
+from langgraph.checkpoint.memory import InMemorySaver
+from .desk_model import DeskModel
+from .password_check import no_passwords
 load_dotenv()  # reads GROQ_API_KEY from the root .env
 
 SYSTEM_PROMPT = (
@@ -36,3 +40,17 @@ def run():
     desk = build_desk()
     for question in ["Where is A17?", "Is shipping free?", "Where is C40?"]:
         print(f"Q: {question}\nA: {ask(desk, question)[-1].text}\n")
+
+agent = create_agent(
+    DeskModel(),
+    system_prompt="You are the support assistant for a small online shop. Answer in one or two short sentences, using only what the tools returned. If a tool says an order is not the customer's, say exactly that. Add nothing the tools did not say.",
+    tools=[lookup_order, refund_order, search_policies],
+    context_schema=Customer,
+    middleware=[
+        no_passwords,
+        PIIMiddleware("credit_card", strategy="mask"),
+        ModelCallLimitMiddleware(run_limit=6),
+        HumanInTheLoopMiddleware(interrupt_on={"refund_order": True}),
+    ],
+    checkpointer=InMemorySaver(),
+)
